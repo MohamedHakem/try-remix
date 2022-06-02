@@ -1,0 +1,104 @@
+---
+title: סטייט בפייתון וג׳ופיטר
+slug: state-management-in-python
+date: Apr 10, 2020
+category: Python
+summary: איך מימשתי סטייט בשביל אפליקציות פייתון
+---
+
+## מבוא
+
+I work at a cool company named Imubit.
+This company creates AI solutions for refineries.
+
+At the beginning of the year, we decided to create a team that will create internal data science and data investigation tools.
+After a lot of discussion, we landed on building those tools in JupyterLab.
+
+My task was (and still is) to create data visualization tools that let the user query big amount of data, modify it and visualize it in charts and heat maps.
+
+## הבעיה
+
+The applications became bigger and bigger, and had components that were used in multiple different applications.
+This created a situation where I needed to find a way to manage and share data between multiple components, across multiple applications.
+
+### ההארה
+
+As a frontend developer I knew what I needed right away: State management.
+
+The idea was simple:
+I need a single source of truth to all components, that will hold the current user selections and cache the current queries results.
+This source should be able to notify a component on a data change.
+
+Now, if I was using React for example, I would probably go for MobX, but sadly, it does not exist for Python.
+
+## הפתרון
+
+My solution was a Proxy inspired idea:
+Create a class that inherit dict, and add the option to notify and trigger listeners.
+
+Because we are dealing with Python, I did not want to use an Event based mechanism, and preferred to keep is as synchronous is I can.
+
+This will be easier to debug and use in Python.
+
+We start with a “proxy” like solution:
+
+```python
+class StateManager(dict):
+	def __init__(self initial_state: dict):
+		self[‘state’] = initial_state
+
+	 # Use getattr and setattr to block direct manipulations
+```
+
+From there we need to add the state management.
+I chose to use `set_state(*path, value)` and `get_state(*path)`
+
+set_state(\*path, value) - will iterate the path and add the value to that path in self[’state’], will create that path if not exists
+
+get_state(\*path) - will iterate the path and return the value if exists.
+
+Now, that we have a state caching, we can add the components update mechanism;
+
+```python
+class StateManager(dict):
+	def __init__(self, initial_state: dict):
+		self[‘state’] = initial_state
+		self.registered_callbacks: dict = {}
+
+# ….
+```
+
+```python
+def register(self, func: Callable):
+	#  gets the function name, and subscribe to a top level keyword with that name.
+	func_name = func.__name__
+	if func_name in self.registered_callbacks:
+		self.registered_callbacks[func_name].append(func)
+	else:
+		self.registered_callbacks[func_name] = [func]
+```
+
+```python
+def subscribe(self, keyword: str, func: Callable):
+	#  subscribe to a top level keyword with same name.
+	if keyword in self.registered_callbacks:
+		self.registered_callbacks[keyword].append(func)
+	else:
+		self.registered_callbacks[keyword] = [func]
+```
+
+```python
+def notify(self, keyword: str, event_type: str, new_value: Any, old_value: Any):
+	"""
+	Notify listeners of a keyword, called from set_state
+	Callback will get the following arguments:
+	- event_type: represents the type to change (server response, or user selection)
+	- new value
+	- old value
+	"""
+	if keyword in self.registered_callbacks:
+		for fn in self.registered_callbacks[keyword]:
+			fn(event_type, new_val, old_val)
+```
+
+Next step: convert it from a dictionary to a class members and take advantage of the dot-notation.

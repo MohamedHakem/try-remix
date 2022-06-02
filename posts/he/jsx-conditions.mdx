@@ -1,0 +1,75 @@
+---
+title: אל תשימו לוגיקה בתוך הJSX
+slug: jsx-conditions
+date: July 11, 2020
+category: React
+summary: מדוע אני לא מכניס תנאים לJSX
+---
+
+## הקדמה
+
+עכשיו, כשכולם מדברים על הוקים ותכנות פונקציונלי, הגיע הזמן לבדוק מחדש כמה טעויות שכולנו עושים.
+
+רובנו, אם לא כולנו, קראנו את הציטוט הבא בעבר:
+
+> In computer science, declarative programming is a programming paradigm - a style of building the structure and elements of computer programs - that expresses the logic of a computation without describing its control flow - Wikipedia
+
+#### אז ריאקס דקלרטיביית, נכון?
+
+לא.
+
+## תשתית
+
+### דוגמאת בסיס
+
+הביטו בדוגמא הבאה:
+
+```jsx
+function App(props) {
+  return (
+    <div>
+      {props.isUserLoggedIn ? <UserImage {...props} /> : <Avatar {...props} />}
+    </div>
+  );
+}
+```
+
+### האם זה דקלרטיבי?
+
+לא. זה **imperative**!
+
+## נצלול לעומק
+
+אם נחשוב על _The Single Responsibility principle_, נראה שקוד זה שובר את העיקרון.
+
+#### למה?
+
+בדוגמא המופשטת שלנו, ניתן לראות של`UserImage` וגם ל`Avatar` יש את אותו עקרון לוגי: שניה מסתמחים על `isUserLoggedIn`.
+
+## הפתרון
+
+```jsx highlight=4,5,9
+const UserImage = (props) => <img src={props.userImage} alt={props.userName} />;
+const Avatar = (props) => <img src="images/no-user" alt="Not logged in" />;
+const UserAvatar = (props) => {
+  if (props.isUserLoggedIn) return <UserImage {...props} />;
+  else return <Avatar {...props} />;
+};
+
+function App(props) {
+  return <UserAvatar {...props} />;
+}
+```
+
+אם נסתכל על הדוגמא החדשה, נוכל לראות ש`App` לא מודע יותר לשימוש ב`isUserLoggedIn`.
+
+## מה הרווחנו
+
+### להלן כמה יתרונות לגישה זו
+
+- קל יותר לכתוב טסטים
+- קל לדאבג
+- ניתוק בין לוגיקה לרנדור
+- בסקייל גדול, זה מצמצם דרמטית את סיבוכיות הקוד
+
+Happy Reacting!

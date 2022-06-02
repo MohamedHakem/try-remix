@@ -1,0 +1,79 @@
+---
+title: Why using conditions in JSX is wrong
+slug: jsx-conditions
+date: July 11, 2020
+category: React
+summary: Why using conditions in JSX is wrong
+---
+
+## Abstract
+
+With React Hooks craze and the renewed functional programming talk, we need to revisit a mistake we all do in React.
+
+Most, if not all, of us have read this quote some time in our professional life:
+
+> In computer science, declarative programming is a programming paradigm - a style of building the structure and elements of computer programs - that expresses the logic of a computation without describing its control flow - Wikipedia
+
+#### So all of us, who uses react, are writing declarative code, right?
+
+Wrong.
+
+## Case study
+
+### Base example
+
+Let's take a look on the following code:
+
+```jsx
+function App(props) {
+  return (
+    <div>
+      {props.isUserLoggedIn ? <UserImage {...props} /> : <Avatar {...props} />}
+    </div>
+  );
+}
+```
+
+### Is this declarative?
+
+no. It is **imperative**!
+
+## Diving deep
+
+When we write react, we tend to think of the react state as the only app state.
+
+But if we take another look at _The Single Responsibility principle_, we clearly see that the former code breaks this principle.
+
+#### why?
+
+Simple. In our over simplified case, we can see that both `UserImage` an `Avatar` have the same application logic principle: they both are relying on the log in state.
+
+## Solution
+
+```jsx highlight=4,5,9
+const UserImage = (props) => <img src={props.userImage} alt={props.userName} />;
+const Avatar = (props) => <img src="images/no-user" alt="Not logged in" />;
+const UserAvatar = (props) => {
+  if (props.isUserLoggedIn) return <UserImage {...props} />;
+  else return <Avatar {...props} />;
+};
+
+function App(props) {
+  return <UserAvatar {...props} />;
+}
+```
+
+When we take another look now, we can see that App component should not care how login state affects the avatar.
+
+## What we gained
+
+### Some more benefits to this approach
+
+- We can add tests in a simpler way
+- We can use the Newspaper code structure approach easily
+- We can debug better
+- We decouple the logic from the render, minimising those weird an unreadable production errors
+- It will push us to use component per file approach and prevent us from having those 100 components files
+- It will prevent us from having those 1000 LoC files that are pain to get into every time we need to debug or add features
+
+Happy Reacting!

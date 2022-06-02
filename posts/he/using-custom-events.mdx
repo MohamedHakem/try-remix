@@ -1,0 +1,160 @@
+---
+title: תקשורת בין קומפוננטות עם איוונט
+slug: using-custom-events
+date: Sep 17, 2019
+category: React
+summary: אין ניתן לצמצם קריאות לשרת ורינדורי ריאקט בעזרת CustomEvent
+---
+
+## מבוא
+
+We use an everything-is-a-module approach - alongside micro-services everywhere in our company.
+This usually is a good place to be in.
+Yet sometimes you reach to a point where you component being a module is just too much.
+
+## המקרה
+
+### דמיינו את המקרה הבא:
+
+In your website, you have some live tweet viewers.
+The tweet viewer auto updates, and has a specific server for data fetching.
+The server API endpoint returns all tweets together.
+Each tweet viewer is a standalone module, imported from and installed react library you hold.
+
+Cool.
+
+Now, you want to use multiple tweet viewers on screen, **while keep calling just one fetch for all of them**.
+
+### איך נעשה זאת??
+
+_This is merely wrong and there must be another way!_
+_Because, when you think about it…_
+
+> How can we call an inner function of one component, and update all others from it?
+> How can multiple components communicate each other, without using the parent?
+
+## הכירו את CustomEvent
+
+After all, events were invented for a reason.
+It helps us communicating between different aspects of the web application.
+User interaction events help us connect UI to logic and create **behavior**.
+So why don't we use this mechanism to connect our multiple UI components to data, to **create one-way data binding**?
+
+Recipe:
+
+- react tweet viewer components
+- data event router
+- custom event handler
+- async data fetcher
+
+## טוויטר מוק בריאקט
+
+```javascript
+import React, { Component } from "react";
+import { EventHandler } from "../logic/event-handler";
+import "../styles.css";
+export default class TweetViewer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tweetData: {},
+    };
+  }
+  componentDidMount() {
+    EventHandler.subscribe(this.props.tweetId + "::data", (event) => {
+      this.setState({ tweetData: event.detail });
+    });
+  }
+
+  render() {
+    const { author, tweet } = this.state.tweetData;
+    return (
+      <div className="tweet">
+        <h4>auothor: @{author}</h4>
+        <p>tweet: {tweet}</p>
+      </div>
+    );
+  }
+}
+```
+
+## App Component
+
+```javascript
+import React from "react";
+import ReactDOM from "react-dom";
+import TweetViewer from "./components/TweetViewer";
+import "./styles.css";
+import { EventRouter } from "./logic/event-handler";
+
+class App extends React.Component {
+  tweetIds = [1, 2, 3, 4, 5];
+  router = new EventRouter();
+
+  componentDidMount() {
+    this.router.fetchTweets(this.tweetIds);
+  }
+  render() {
+    return (
+      <div className="App">
+        {this.tweetIds.map((id) => (
+          <TweetViewer tweetId={id} key={id} />
+        ))}
+      </div>
+    );
+  }
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+```
+
+## Event Handler!
+
+```javascript
+class CustomEventHandler extends EventTarget {
+  subscribe(eventName, cb) {
+    window.addEventListener(eventName, cb);
+  }
+  emit(eventName, payload) {
+    window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
+  }
+}
+
+export const EventHandler = new CustomEventHandler();
+
+export class EventRouter {
+  constructor() {
+    this.eventHandler = EventHandler;
+  }
+
+  fetchTweets(tweetIds) {
+    setInterval(() => {
+      tweetIds.forEach((id) => {
+        this.eventHandler.emit(id + "::data", {
+          author: randomString(10),
+          tweet: randomString(),
+        });
+      });
+    }, 3000);
+  }
+}
+
+// mimic response
+function randomString(length) {
+  const strLength = length || Math.random() * 100;
+  return Math.random().toString(36).substring(strLength);
+}
+```
+
+## Full App
+
+[![Edit serene-morning-n2rd6](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/serene-morning-n2rd6?autoresize=1&fontsize=14&hidenavigation=1&theme=dark)
+
+<iframe
+  src="https://codesandbox.io/embed/serene-morning-n2rd6?fontsize=14&hidenavigation=1&theme=dark"
+  style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+  title="serene-morning-n2rd6"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>

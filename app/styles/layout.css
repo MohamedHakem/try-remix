@@ -1,0 +1,81 @@
+main {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: 6rem 1fr;
+}
+body[data-theme="light"] {
+  --colors-bg: hsla(0, 0%, 96%, 0.8);
+  --colors-modalBg: hsla(0, 0%, 96.1%);
+  --colors-main: hsla(193.9, 100%, 50%, 0.9);
+  --colors-text: hsl(204.2, 100%, 28.6%);
+  --colors-subText: hsla(204.2, 100%, 28.6%, 0.7);
+  --colors-headerText: hsl(204.2, 100%, 28.6%);
+  --colors-header: hsl(216.5, 100%, 50%);
+  --colors-paragraph: hsl(216.9, 10.2%, 24.9%);
+  --colors-decorations: hsl(215.1, 90.8%, 61.6%);
+  --colors-hoverDecorations: hsla(215.1, 90.8%, 61.6%, 0.1);
+  --colors-inputs: hsla(215, 91%, 62%, 0.2);
+  --colors-link: hsl(0, 0%, 0%);
+  --colors-charts: #448ef6;
+}
+body[data-theme="dark"] {
+  --colors-bg: hsl(216, 18.1%, 16.3%);
+  --colors-modalBg: hsl(216, 18.1%, 16.3%);
+  --colors-main: hsl(214.1, 32.8%, 26.3%);
+  --colors-text: hsl(0, 0%, 93.3%);
+  --colors-subText: hsla(0, 0%, 93.3%, 0.7);
+  --colors-headerText: hsl(177.6, 100%, 50%);
+  --colors-header: hsl(182.7, 100%, 35.5%);
+  --colors-paragraph: hsl(205.7, 51.9%, 89.4%);
+  --colors-decorations: hsl(182.7, 100%, 35.5%);
+  --colors-hoverDecorations: hsla(182.7, 100%, 35.5%, 0.1);
+  --colors-inputs: hsla(183, 100%, 35%, 0.2);
+  --colors-link: hsl(0, 0%, 100%);
+  --colors-charts: #00fff5;
+}
+body[data-theme="monokai"] {
+  --colors-bg: rgb(46, 46, 46);
+  --colors-modalBg: rgba(46, 46, 46, 0.8);
+  --colors-main: hsl(214.1, 32.8%, 26.3%);
+  --colors-text: rgb(214, 214, 214);
+  --colors-subText: rgba(121, 121, 121, 0.7);
+  --colors-headerText: rgb(229, 181, 103);
+  --colors-header: rgb(180, 210, 115);
+  --colors-paragraph: rgba(214, 214, 214, 0.8);
+  --colors-decorations: rgb(180, 210, 115);
+  --colors-hoverDecorations: rgba(232, 125, 62, 0.2);
+  --colors-inputs: rgba(158, 134, 200, 0.2);
+  --colors-link: rgb(176, 82, 121);
+  --colors-charts: #6c99bb;
+}
+body[data-theme="cobalt2"] {
+  --colors-bg: #15232d;
+  --colors-modalBg: #193549;
+  --colors-main: #9effff;
+  --colors-text: white;
+  --colors-subText: rgba(255, 255, 255, 0.7);
+  --colors-headerText: #ffc600;
+  --colors-header: #ff9d00;
+  --colors-paragraph: #9effff;
+  --colors-decorations: #2affdf;
+  --colors-hoverDecorations: #0d3a58;
+  --colors-inputs: #35434d;
+  --colors-link: #fb94ff;
+  --colors-charts: #fb94ff;
+}
+
+:root {
+  --header-height: 6rem;
+}
+body {
+  background-color: var(--colors-bg);
+  color: var(--colors-text);
+}
+::selection {
+  background-color: var(--colors-decorations);
+  color: var(--colors-bg);
+}
+a {
+  color: var(--colors-link);
+  scroll-margin-top: 6.5rem;
+}
