@@ -8,7 +8,7 @@ export default function Posts() {
   const posts = useLoaderData<Post[]>();
   return (
     <main>
-      <h1>Posts</h1>
+      <h1>Posts!</h1>
       <section>
         <ul>
           {posts.map((post) => (
